@@ -1,0 +1,77 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model ConnectedAccount {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  password     String   // Encrypted app password
+  imapHost     String   @default("imap.gmail.com")
+  imapPort     Int      @default(993)
+  smtpHost     String   @default("smtp.gmail.com")
+  smtpPort     Int      @default(465)
+  lastSyncAt   DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model PaymentMethod {
+  id            String         @id @default(uuid())
+  name          String         // e.g., "Chase Sapphire", "PayPal"
+  last4         String?
+  subscriptions Subscription[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+model Subscription {
+  id              String         @id @default(uuid())
+  name            String         // e.g., "Netflix", "Spotify"
+  merchantName    String?        // Exact merchant name for matching
+  amount          Float
+  currency        String         @default("USD")
+  billingCycle    String         // "MONTHLY", "YEARLY"
+  startDate       DateTime?
+  nextRenewalDate DateTime?
+  status          String         @default("ACTIVE") // "ACTIVE", "CANCELED"
+  paymentMethodId String?
+  paymentMethod   PaymentMethod? @relation(fields: [paymentMethodId], references: [id])
+  renewalEvents   RenewalEvent[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+model RenewalEvent {
+  id             String       @id @default(uuid())
+  subscriptionId String
+  subscription   Subscription @relation(fields: [subscriptionId], references: [id])
+  amount         Float
+  currency       String       @default("USD")
+  date           DateTime
+  emailSnippet   String?
+  emailId        String?      // Gmail message ID
+  createdAt      DateTime     @default(now())
+}
+
+model AppSettings {
+  id                   String  @id @default("default")
+  alertLeadDays        Int     @default(1)
+  notify               String  @default("desktop") // desktop, email, none
+  smtpSenderAccountId  String?
+  largeChargeThreshold Float   @default(5000)
+}
+
+model Alert {
+  id             String   @id @default(uuid())
+  type           String   // e.g. "large_charge", "renewal"
+  title          String
+  body           String
+  isRead         Boolean  @default(false)
+  actionLink     String?
+  createdAt      DateTime @default(now())
+}
