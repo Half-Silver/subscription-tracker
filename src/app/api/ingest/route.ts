@@ -6,7 +6,7 @@ export const runtime = 'edge';
 
 export async function POST(req: Request) {
   try {
-    const { emailText } = await req.json();
+    const { emailText }: any = await req.json();
     const db = getRequestContext().env.DB;
     
     // Use LM Studio's local OpenAI-compatible endpoint
@@ -48,7 +48,7 @@ ${emailText}`;
        throw new Error(`LM Studio Error: ${lmStudioResponse.statusText}`);
     }
 
-    const lmData = await lmStudioResponse.json();
+    const lmData: any = await lmStudioResponse.json();
     let text = lmData.choices[0].message.content || '{}';
     
     // Strip markdown code blocks if the model accidentally includes them

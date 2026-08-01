@@ -18,7 +18,7 @@ export default function AccountManager() {
     setLoading(true);
     try {
       const res = await fetch('/api/accounts');
-      const data = await res.json();
+      const data: any = await res.json();
       setAccounts(data);
     } catch (e) {
       console.error(e);
@@ -57,7 +57,7 @@ export default function AccountManager() {
     setSyncLogs(['Starting IMAP Sync...']);
     try {
       const res = await fetch('/api/sync', { method: 'POST' });
-      const data = await res.json();
+      const data: any = await res.json();
       if (data.logs) {
         setSyncLogs(prev => [...prev, ...data.logs]);
       }

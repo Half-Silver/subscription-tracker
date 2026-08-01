@@ -1,11 +1,11 @@
 import React from 'react';
-import { getSubscriptions, addSubscription, deleteSubscription } from './actions';
+import { getSubscriptions, addSubscription } from './actions';
 import AccountManager from './AccountManager';
 
 export const runtime = 'edge';
 
 export default async function Dashboard() {
-  const subscriptions = await getSubscriptions();
+  const subscriptions = (await getSubscriptions()) as any[];
 
   const totalSpend = subscriptions.reduce((acc: number, sub: any) => {
     return sub.status !== 'cancelled' && sub.status !== 'failed' ? acc + sub.amount : acc;

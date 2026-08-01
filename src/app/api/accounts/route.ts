@@ -18,7 +18,7 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    const { user, pass } = await req.json();
+    const { user, pass }: any = await req.json();
     let accounts: {user: string, pass: string}[] = [];
     if (fs.existsSync(ACCOUNTS_FILE)) {
       accounts = JSON.parse(fs.readFileSync(ACCOUNTS_FILE, 'utf8'));
@@ -35,7 +35,7 @@ export async function POST(req: Request) {
 
 export async function DELETE(req: Request) {
   try {
-    const { user } = await req.json();
+    const { user }: any = await req.json();
     if (fs.existsSync(ACCOUNTS_FILE)) {
       let accounts = JSON.parse(fs.readFileSync(ACCOUNTS_FILE, 'utf8'));
       accounts = accounts.filter((a: any) => a.user !== user);

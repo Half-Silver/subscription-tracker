@@ -47,15 +47,15 @@ export async function POST() {
           const sinceDate = new Date();
           sinceDate.setDate(sinceDate.getDate() - 14);
 
-          const searchResult = await client.search({
+          const searchResult: any = await client.search({
              since: sinceDate,
              or: [ { text: 'debited' }, { text: 'will be charged' } ]
           });
 
           if (searchResult.length > 0) {
             const recentSequence = searchResult.slice(-5).join(',');
-            
             for await (let message of client.fetch(recentSequence, { source: true })) {
+               if (!message.source) continue;
                const parsed = await simpleParser(message.source);
                const emailBody = parsed.text || '';
                
@@ -68,7 +68,7 @@ export async function POST() {
                  body: JSON.stringify({ emailText: emailBody })
                });
                
-               const data = await res.json();
+               const data: any = await res.json();
                if (data.success) {
                   processedCount++;
                   logs.push(`Success: ${data.action} subscription for ${data.data?.merchant}`);

@@ -63,7 +63,7 @@ async function backfillEmails() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ emailText: emailBody })
         });
-        const data = await res.json();
+        const data: any = await res.json();
         if (data.success) {
            console.log(`✅ Success: ${data.action} subscription for ${data.data?.merchant}`);
         } else {

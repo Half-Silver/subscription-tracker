@@ -5,7 +5,7 @@ export const runtime = 'edge';
 
 export async function POST(req: Request) {
   try {
-    const data = await req.json();
+    const data: any = await req.json();
     const db = getRequestContext().env.DB;
     
     // Step 1: Handle Payment Method
