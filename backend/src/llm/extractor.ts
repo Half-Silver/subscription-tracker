@@ -49,7 +49,7 @@ ${emailBody.slice(0, 4000)} // Truncating to avoid massive token counts
       throw new Error(`LM Studio API error: ${response.status}`);
     }
 
-    const data = await response.json();
+    const data: any = await response.json();
     const content = data.choices[0]?.message?.content;
     
     // Clean up potential markdown formatting like \`\`\`json
