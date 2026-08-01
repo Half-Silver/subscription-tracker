@@ -1,58 +1,58 @@
-## Goal
+## Plan: Mayday subscription tracker UI
 
-Build the local subscription-tracker frontend as a full UI on TanStack Start with mock data, styled per the selected "Terminal utility" direction. All data reads/writes go through a thin API-client layer pointed at `VITE_API_BASE_URL` — but every hook falls back to bundled fixtures when the backend is unreachable, so the app is fully browsable in preview.
+### Summary
+Build the frontend UI for Mayday as a clean, trustworthy SaaS dashboard. Since the backend exists already, this plan focuses on screens, components, navigation, and realistic mock data that mirrors the shape your API will later return. The UI will be styled as a light, professional finance app with subtle indigo accents and crisp typography.
 
-## Design tokens (locked from selected prototype)
+### Design direction
+- **Visual style:** Clean light SaaS with a warm off-white background, soft slate text, and indigo accents for primary actions and active states. Cards have light borders, rounded corners, and subtle shadows.
+- **Layout:** Persistent sidebar on desktop with a mobile sheet menu; top bar with search and account. Main content uses a contained max-width layout.
+- **Feel:** Calm, organized, and credible — like a finance app you trust with your money.
+- **Data surfaces:** totals, monthly/yearly spend, upcoming renewals, category breakdowns, and subscription status.
 
-Ported verbatim into `src/styles.css`:
-- Fonts: Inter (sans), JetBrains Mono (mono), loaded via `<link>` in `__root.tsx`
-- Colors: `--surface-base #09090b`, `--surface-panel #18181b`, `--accent-primary #a1a1aa`, zinc scale, emerald/amber/blue status dots
-- Composition: 256px sidebar + main; 64px top strip with monthly/annual totals + Refresh Sync/Add New buttons; dashboard is a 12-col grid (renewals 8 / allocation 4 / activity 12)
+### Pages to build
 
-## Routes (`src/routes/`)
+| Route | File | Purpose |
+| --- | --- | --- |
+| `/` | `src/routes/index.tsx` | Dashboard: summary cards, spend chart, upcoming renewals, recent subscriptions. |
+| `/subscriptions` | `src/routes/subscriptions/index.tsx` | Subscription list: searchable/filterable table/grid with status, cost, renewal date, category. |
+| `/subscriptions/$id` | `src/routes/subscriptions/$id.tsx` | Subscription detail: full info, detected-from email, payment history, edit/categorize actions. |
+| `/settings` | `src/routes/settings/index.tsx` | Settings / integrations: email/IMAP connection status, AI rules, categories, notification preferences. |
 
-```
-__root.tsx           — shell: font links, sidebar layout wrapper, <Outlet/>
-index.tsx            — Dashboard
-subscriptions.tsx           — layout (<Outlet/>)
-subscriptions.index.tsx     — list w/ Credit/Debit/UPI tabs + category/status filters
-subscriptions.$id.tsx       — detail: fields + renewal history table
-payment-methods.tsx
-accounts.tsx         — 10 Gmail accounts, Connect/Reconnect/Backfill, last-synced
-settings.tsx         — alert timing, notification method
-```
+### Layout shell
+- Create `src/routes/_app.tsx` as a pathless layout that wraps the four pages with a shared sidebar, header, and `<Outlet />`.
+- Update `src/routes/__root.tsx` to render the `Sonner` toaster once and keep the global head metadata clean.
 
-Each route gets its own `head()` (title + description). Nav uses `<Link>`, not `<a href>`.
+### Data model (mock layer)
+A single `src/lib/subscriptions.ts` file exports a `Subscription` type plus a mock array and async helpers (`getSubscriptions`, `getSubscriptionById`, `getStats`) so components load data identically to how they will when the real API is wired in.
 
-## Components (`src/components/`)
+Core fields:
+- `id`, `name`, `logo` (optional/fallback initials), `category`, `status` (active/trial/cancelled/paused)
+- `billingCycle` (monthly/annual), `cost` (amount + currency), `nextRenewal`, `paymentMethod`
+- `detectedFrom` (email sender/subject), `confidence` (AI confidence score), `notes`
 
-- `AppSidebar` — nav from the prototype (Dashboard / Subscriptions / Gmail Accounts / Payment Methods / Analytics / Settings), footer user chip
-- `TopStrip` — monthly + annual totals, action buttons; used across pages
-- `SubscriptionCard`, `SubscriptionsTable`, `RenewalTimeline`
-- `SpendChart` — Recharts category bars (matches prototype's stacked bar style)
-- `AlertsFeed`, `AccountConnectionRow`, `StatusBadge`
+### Components to build
+- `AppSidebar`, `AppHeader`, `MobileNav`
+- `StatCard`, `SpendChart` (Recharts area/bar chart), `RenewalTimeline`
+- `SubscriptionTable`, `SubscriptionCard`, `StatusBadge`, `CategoryBadge`
+- `SubscriptionDetailView`, `SubscriptionEditForm` (controlled, non-persisting)
+- `IntegrationCard`, `CategoryManager`, `MockDataBanner` (explains data is local mock)
 
-## Data layer
+### Technical notes
+- All routes are public (no auth gate) because the backend already owns auth and the user asked for UI only.
+- Keep business logic out of the UI; helpers return plain data that the real API can later substitute without component changes.
+- Use `date-fns` for date formatting and `recharts` for the spend chart.
+- Use existing shadcn/ui components: Card, Button, Badge, Table, Tabs, Dialog, Input, Select, Switch, Separator, Sheet.
+- Add route-specific `head()` metadata for each page (title, description, OG tags).
+- Replace the placeholder index page entirely; the dashboard becomes the home view.
 
-- `src/lib/api-client.ts` — `fetch` wrapper reading `import.meta.env.VITE_API_BASE_URL` (default `http://localhost:8000`)
-- `src/lib/mock-data.ts` — realistic fixtures: ~12 subscriptions (Netflix, Spotify, ChatGPT, AWS, Notion, Framer, Claude Pro, etc.), 3 payment methods, 10 Gmail accounts with staggered last-synced times, alerts feed
-- `src/hooks/useSubscriptions.ts`, `usePaymentMethods.ts`, `useAccounts.ts`, `useSettings.ts` — React Query hooks that try the API and fall back to mock data on error; mutations optimistically update the query cache
-- TanStack Query already provided by the template; QueryClient wired in `src/router.tsx`
+### Out of scope
+- Real email/IMAP integration, AI categorization, or backend persistence (this is UI-only and will use mocked data shaped for the future API).
+- Authentication/login flows (backend owns this).
+- Real payments or webhooks.
 
-## Build order
+### Deliverables
+1. Shared layout with navigation and responsive mobile menu.
+2. Four fully rendered pages with realistic mock data.
+3. Reusable component library for cards, tables, badges, charts, and forms.
+4. Clean metadata and a cohesive visual system using the existing Tailwind theme tokens.
 
-1. Port design tokens into `src/styles.css`; add font links in `__root.tsx`
-2. Sidebar layout in `__root.tsx` + `AppSidebar`
-3. Mock data + API client + React Query hooks
-4. Dashboard (`index.tsx`) — TopStrip, renewals table, allocation chart, activity feed
-5. Subscriptions list + detail
-6. Payment methods
-7. Connected accounts
-8. Settings
-
-## Technical notes
-
-- TanStack Start, so file-based routing under `src/routes/`; the layout lives in `__root.tsx` (no `_app` folder)
-- No auth, no Lovable Cloud — single-user local tool
-- No SSR data fetching in loaders; all reads happen in components via `useQuery`, so `VITE_API_BASE_URL` being unreachable during build/prerender is fine
-- Recharts added via `bun add recharts`
